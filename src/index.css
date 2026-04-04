@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-primary: #10b981;
+  --color-brand-secondary: #059669;
+  --color-brand-accent: #3b82f6;
+  --color-brand-bg: #0f172a;
+  --color-brand-card: #1e293b;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-bg text-slate-100 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-brand-card/40 backdrop-blur-md border border-white/10 shadow-xl;
+  }
+
+  .stat-card {
+    @apply glass p-6 rounded-2xl flex items-center gap-4 transition-all hover:scale-[1.02] hover:bg-brand-card/60;
+  }
+}
