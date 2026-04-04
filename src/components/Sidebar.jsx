@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useFinance } from "../context/FinanceContext";
-import { LayoutDashboard, ReceiptText, PieChart, ShieldUser, TrendingUp, ChevronDown } from "lucide-react";
+import { LayoutDashboard, ReceiptText, PieChart, ShieldUser, TrendingUp } from "lucide-react";
+import CustomSelect from "./CustomSelect";
 
 const Sidebar = () => {
     const { role, setRole } = useFinance();
@@ -9,6 +10,11 @@ const Sidebar = () => {
         { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/" },
         { icon: <ReceiptText size={20} />, label: "Transactions", path: "/transactions" },
         { icon: <PieChart size={20} />, label: "Insights", path: "/insights" },
+    ];
+
+    const roleOptions = [
+        { value: "viewer", label: "Viewer Mode" },
+        { value: "admin", label: "Admin Access" }
     ];
 
     return (
@@ -42,27 +48,24 @@ const Sidebar = () => {
                 ))}
             </nav>
 
-            {/* Role Switcher Section (Admin/Viewer) */}
+            {/* Role Switcher Section (Redesigned with CustomSelect) */}
             <div className="glass p-5 rounded-2xl border-brand-accent/20 bg-brand-accent/5 relative overflow-hidden group">
-                <div className="flex items-center gap-2 mb-3 text-brand-accent relative z-10">
+                <div className="flex items-center gap-2 mb-4 text-brand-accent relative z-10">
                     <ShieldUser size={18} />
-                    <span className="text-xs font-bold uppercase tracking-widest">Access Control</span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-[#60efff]">Access Control</span>
                 </div>
                 
                 <div className="relative z-10">
-                    <select
+                    <CustomSelect 
+                        options={roleOptions}
                         value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700/50 rounded-lg py-2.5 px-4 text-sm font-semibold focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none transition-all cursor-pointer appearance-none text-slate-200 hover:bg-slate-800"
-                    >
-                        <option value="viewer">Viewer Mode</option>
-                        <option value="admin">Admin Access</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none group-focus-within:rotate-180 transition-transform" size={16} />
+                        onChange={setRole}
+                        className="w-full"
+                    />
                 </div>
 
-                <p className="mt-3 text-[10px] text-slate-500 leading-relaxed text-center font-medium opacity-80 uppercase tracking-tighter">
-                    {role === "admin" ? "Write capabilities active" : "Read-only environment"}
+                <p className="mt-4 text-[10px] text-slate-500 leading-relaxed text-center font-black uppercase tracking-tighter opacity-60">
+                    {role === "admin" ? "Write Access Active" : "Read-Only Environment"}
                 </p>
 
                 {/* Decoration */}

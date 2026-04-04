@@ -3,59 +3,20 @@ import { createContext, useContext, useState, useEffect } from "react";
 const FinanceContext = createContext();
 
 export const FinanceProvider = ({ children }) => {
-    // 🔹 Role State
     const [role, setRole] = useState("viewer");
-
-    // 🔹 Transactions State
     const [transactions, setTransactions] = useState([]);
-
-    // 🔹 Filters
+    const [cards, setCards] = useState([]);
     const [search, setSearch] = useState("");
     const [filterType, setFilterType] = useState("all");
 
-    // 🔹 Cards State
-    const [cards, setCards] = useState([
-        {
-            id: 1,
-            cardNumber: "**** **** **** 4242",
-            expiry: "12/28",
-            holder: "John Doe",
-            type: "visa",
-            theme: "from-slate-950 via-slate-900 to-indigo-950",
-            balance: 24500
-        },
-        {
-            id: 2,
-            cardNumber: "**** **** **** 8888",
-            expiry: "04/30",
-            holder: "John Doe",
-            type: "mastercard",
-            theme: "from-emerald-600 via-emerald-800 to-slate-900",
-            balance: 12800
-        },
-        {
-            id: 3,
-            cardNumber: "**** **** **** 1234",
-            expiry: "09/27",
-            holder: "John Doe",
-            type: "visa",
-            theme: "from-amber-500 via-amber-700 to-slate-900",
-            balance: 8400
-        },
-        {
-            id: 4,
-            cardNumber: "**** **** **** 9999",
-            expiry: "01/29",
-            holder: "John Doe",
-            type: "mastercard",
-            theme: "from-rose-600 via-rose-800 to-slate-950",
-            balance: 3200
-        }
-    ]);
+    // Static baseline for trends (In real app, this would be computed from past month's data)
+    const [lastMonthData] = useState({
+        income: 58000,
+        expenses: 32000
+    });
 
-    // 🔹 Initial Enriched Mock Data
     useEffect(() => {
-        const enrichedData = [
+        const enrichedTransactions = [
             { id: 1, date: "2026-04-01", amount: 65000, category: "Salary", type: "income", description: "Monthly fixed salary" },
             { id: 2, date: "2026-04-02", amount: 12000, category: "Freelance", type: "income", description: "Website redesign project" },
             { id: 3, date: "2026-04-03", amount: 25000, category: "Rent", type: "expense", description: "Apartment monthly rent" },
@@ -73,51 +34,55 @@ export const FinanceProvider = ({ children }) => {
             { id: 15, date: "2026-04-15", amount: 4000, category: "Dividends", type: "income", description: "Stock market payouts" },
         ];
 
-        const saved = localStorage.getItem("transactions");
-        setTransactions(saved ? JSON.parse(saved) : enrichedData);
+        const initialCards = [
+            { id: 1, cardNumber: "**** **** **** 4242", expiry: "12/28", holder: "John Doe", type: "visa", theme: "from-slate-950 via-slate-900 to-indigo-950", balance: 100000, cardType: "credit" },
+            { id: 2, cardNumber: "**** **** **** 8888", expiry: "04/30", holder: "John Doe", type: "mastercard", theme: "from-emerald-600 via-emerald-800 to-slate-900", balance: 10000, cardType: "credit" },
+            { id: 3, cardNumber: "**** **** **** 1234", expiry: "09/27", holder: "John Doe", type: "visa", theme: "from-amber-500 via-amber-700 to-slate-900", balance: 15000, cardType: "saving" },
+            { id: 4, cardNumber: "**** **** **** 9999", expiry: "01/29", holder: "John Doe", type: "mastercard", theme: "from-rose-600 via-rose-800 to-slate-950", balance: 200, cardType: "saving" }
+        ];
+
+        const savedTxns = localStorage.getItem("transactions");
+        const savedCards = localStorage.getItem("cards");
+
+        setTransactions(savedTxns ? JSON.parse(savedTxns) : enrichedTransactions);
+        setCards(savedCards ? JSON.parse(savedCards) : initialCards);
     }, []);
 
-    // 🔹 Persist Data
     useEffect(() => {
-        localStorage.setItem("transactions", JSON.stringify(transactions));
+        if (transactions.length > 0) localStorage.setItem("transactions", JSON.stringify(transactions));
     }, [transactions]);
 
-    // 🔹 Derived Data (Dashboard Totals)
-    const totalIncome = transactions
-        .filter(t => t.type === "income")
-        .reduce((acc, t) => acc + t.amount, 0);
+    useEffect(() => {
+        if (cards.length > 0) localStorage.setItem("cards", JSON.stringify(cards));
+    }, [cards]);
 
-    const totalExpenses = transactions
-        .filter(t => t.type === "expense")
-        .reduce((acc, t) => acc + t.amount, 0);
-
+    const totalIncome = transactions.filter(t => t.type === "income").reduce((acc, t) => acc + t.amount, 0);
+    const totalExpenses = transactions.filter(t => t.type === "expense").reduce((acc, t) => acc + t.amount, 0);
     const totalBalance = totalIncome - totalExpenses;
 
-    // 🔹 Filtered Transactions Logic
+    // 🔹 Trend Calculations
+    const calculateTrend = (current, previous) => {
+        if (previous === 0) return 0;
+        return ((current - previous) / previous) * 100;
+    };
+
+    const trends = {
+        income: calculateTrend(totalIncome, lastMonthData.income),
+        expenses: calculateTrend(totalExpenses, lastMonthData.expenses)
+    };
+
     const filteredTransactions = transactions.filter(t => {
-        const matchesSearch =
-            t.category.toLowerCase().includes(search.toLowerCase()) ||
-            t.description.toLowerCase().includes(search.toLowerCase());
-
-        const matchesType =
-            filterType === "all" ? true : t.type === filterType;
-
+        const matchesSearch = t.category.toLowerCase().includes(search.toLowerCase()) || 
+                             t.description.toLowerCase().includes(search.toLowerCase());
+        const matchesType = filterType === "all" ? true : t.type === filterType;
         return matchesSearch && matchesType;
     });
 
-    // 🔹 Core Actions
-    const deleteTransaction = (id) => {
-        setTransactions(prev => prev.filter(t => t.id !== id));
-    };
+    const deleteTransaction = (id) => setTransactions(prev => prev.filter(t => t.id !== id));
+    const addTransaction = (newTransaction) => setTransactions(prev => [{ ...newTransaction, id: Date.now() }, ...prev]);
+    const addCard = (newCard) => setCards(prev => [...prev, { ...newCard, id: Date.now() }]);
+    const deleteCard = (id) => setCards(prev => prev.filter(c => c.id !== id));
 
-    const addTransaction = (newTransaction) => {
-        setTransactions(prev => [
-            { ...newTransaction, id: Date.now() },
-            ...prev
-        ]);
-    };
-
-    // 🔹 Role-based Permissions
     const permissions = {
         admin: { canAdd: true, canEdit: true, canDelete: true },
         viewer: { canAdd: false, canEdit: false, canDelete: false },
@@ -126,28 +91,15 @@ export const FinanceProvider = ({ children }) => {
     return (
         <FinanceContext.Provider
             value={{
-                role,
-                setRole,
-
-                transactions,
-                setTransactions,
-                filteredTransactions,
-
-                search,
-                setSearch,
-                filterType,
-                setFilterType,
-
-                cards,
-                setCards,
-
-                deleteTransaction,
-                addTransaction,
-
-                totalIncome,
-                totalExpenses,
-                totalBalance,
-
+                role, setRole,
+                transactions, setTransactions, filteredTransactions,
+                search, setSearch,
+                filterType, setFilterType,
+                cards, setCards,
+                deleteTransaction, addTransaction,
+                addCard, deleteCard,
+                totalIncome, totalExpenses, totalBalance,
+                trends, // 🔹 Exposing calculated trends
                 permissions: permissions[role],
             }}
         >
@@ -156,5 +108,4 @@ export const FinanceProvider = ({ children }) => {
     );
 };
 
-// 🔹 Custom UseHook Provider Access
 export const useFinance = () => useContext(FinanceContext);

@@ -1,30 +1,83 @@
 import { useFinance } from "../context/FinanceContext";
-import { Trash2, ShoppingBag, ReceiptText, Calendar } from "lucide-react";
+import { Trash2, ShoppingBag, ReceiptText, Calendar, Download, FileSpreadsheet } from "lucide-react";
 
 /**
  * Standard Transactions Table Page
- * Can be used as a standalone page view
  */
 const TransactionsTable = () => {
     const { filteredTransactions, deleteTransaction, permissions } = useFinance();
 
+    const handleExportJSON = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(filteredTransactions, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `transactions_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    const handleExportCSV = () => {
+        if (filteredTransactions.length === 0) return;
+        
+        const headers = ["Date", "Category", "Amount", "Type", "Description"];
+        const rows = filteredTransactions.map(t => [
+            t.date,
+            t.category,
+            t.amount,
+            t.type,
+            t.description.replace(/,/g, " ") // Prevent CSV break
+        ]);
+
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(row => row.join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `finance_report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <header className="flex items-center justify-between">
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center border border-slate-700 shadow-xl">
                         <ReceiptText className="text-brand-primary" size={24} />
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-white tracking-tight">Transaction History</h2>
-                        <p className="text-sm text-slate-500 font-medium">Detailed log of all financial movements</p>
+                        <p className="text-sm text-slate-500 font-medium tracking-tight">Detailed log of all financial movements</p>
                     </div>
                 </div>
                 
-                <div className="flex items-center gap-2 bg-slate-800/40 px-4 py-2 rounded-xl border border-slate-700/50">
-                    <Calendar size={14} className="text-slate-500" />
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Live Syncing</span>
+                <div className="flex items-center gap-3">
+                    {/* Excel (CSV) Export */}
+                    <button 
+                        onClick={handleExportCSV}
+                        className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 px-5 py-2.5 rounded-xl border border-emerald-500/30 transition-all active:scale-95 text-xs font-black text-emerald-400 shadow-xl uppercase tracking-widest"
+                        title="Open in Excel"
+                    >
+                        <FileSpreadsheet size={16} />
+                        <span>Excel (CSV)</span>
+                    </button>
+
+                    {/* JSON Export */}
+                    <button 
+                        onClick={handleExportJSON}
+                        className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700 px-5 py-2.5 rounded-xl border border-white/5 transition-all active:scale-95 text-xs font-black text-slate-300 shadow-xl uppercase tracking-widest"
+                    >
+                        <Download size={16} />
+                        <span>JSON</span>
+                    </button>
                 </div>
             </header>
 
@@ -90,8 +143,8 @@ const TransactionsTable = () => {
                                     <td colSpan={permissions.canDelete ? 5 : 4} className="px-6 py-24 text-center">
                                         <div className="flex flex-col items-center gap-3 opacity-40">
                                             <ReceiptText size={48} className="text-slate-600 mb-2" />
-                                            <p className="text-lg font-bold text-slate-400">Transaction Not Found</p>
-                                            <p className="text-xs font-semibold text-slate-600 uppercase tracking-widest">Check your search or filters</p>
+                                            <p className="text-lg font-bold text-slate-400 tracking-tight">Records Not Found</p>
+                                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Check applied filter configuration</p>
                                         </div>
                                     </td>
                                 </tr>

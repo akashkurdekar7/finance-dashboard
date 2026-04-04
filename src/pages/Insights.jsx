@@ -1,111 +1,108 @@
 import { useFinance } from "../context/FinanceContext";
-import { Sparkles, TrendingUp, AlertCircle, PieChart, BarChart3, ArrowRight } from "lucide-react";
+import { Sparkles, TrendingUp, AlertCircle, PieChart, ArrowRight, Zap } from "lucide-react";
 
 export default function Insights() {
-    const { transactions } = useFinance();
+    const { transactions, totalExpenses } = useFinance();
 
-    const expenses = transactions.filter(t => t.type === "expense");
+    // 🔹 Robust Expense Extraction
+    const expensesOnly = transactions.filter(t => 
+        t.type === "expense" && 
+        !["salary", "freelance", "dividend", "income"].includes(t.category.toLowerCase())
+    );
 
     const categoryMap = {};
-    expenses.forEach(e => {
+    expensesOnly.forEach(e => {
         categoryMap[e.category] = (categoryMap[e.category] || 0) + e.amount;
     });
 
-    const categories = Object.keys(categoryMap);
-    const highest = categories.reduce((a, b) =>
-        categoryMap[a] > categoryMap[b] ? a : b, "None"
-    );
+    const categories = Object.keys(categoryMap).sort((a, b) => categoryMap[b] - categoryMap[a]);
+    const highest = categories[0] || "None";
+    const highestAmount = categoryMap[highest] || 0;
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Page Header */}
-            <header className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center border border-slate-700 shadow-xl">
-                    <PieChart className="text-brand-accent transition-transform group-hover:rotate-12" size={24} />
+        <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-right-10 duration-1000 ease-out">
+            {/* Minimalist Header */}
+            <header className="px-2 space-y-1">
+                <div className="flex items-center gap-3">
+                    <Zap className="text-brand-primary" size={18} />
+                    <h3 className="text-base font-black tracking-widest text-white uppercase italic">Insights</h3>
                 </div>
-                <div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Smart Analysis</h2>
-                    <p className="text-sm text-slate-500 font-medium">Algorithmic insights based on your spending</p>
-                </div>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest ml-7">System Analysis</p>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Insight Card */}
-                <div className="lg:col-span-1 flex flex-col gap-6 bg-gradient-to-br from-brand-accent/20 to-brand-primary/10 p-8 rounded-[2.5rem] border border-white/10 glass shadow-2xl relative overflow-hidden group">
-                    <div className="flex items-center gap-3 text-brand-accent relative z-10">
-                        <div className="p-2.5 bg-brand-accent/20 rounded-xl">
-                            <Sparkles size={24} />
-                        </div>
-                        <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-100">Top Insight</span>
-                    </div>
-                    
-                    <div className="space-y-6 relative z-10">
-                        <div className="p-6 bg-slate-950/40 rounded-3xl border border-white/5 backdrop-blur-xl shadow-inner">
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Dominant Category</p>
-                            <div className="flex items-center justify-between gap-4">
-                                <span className="text-3xl font-extrabold text-white tracking-tighter capitalize">{highest}</span>
-                                <div className="flex items-center gap-1.5 text-[10px] font-black text-red-400 bg-red-400/10 px-3 py-1 rounded-full border border-red-400/20 shadow-lg shadow-red-400/5">
-                                    <TrendingUp size={12} />
-                                    <span>CRITICAL</span>
-                                </div>
+            {/* Smart Insight Card - Redesigned for Neatness */}
+            <div className="glass-container p-8 relative group overflow-hidden border border-white/5 shadow-2xl">
+                <div className="flex flex-col gap-8 relative z-10">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center border border-brand-primary/20">
+                                <Sparkles className="text-brand-primary" size={20} />
                             </div>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Dominant Sector</span>
                         </div>
-
-                        <div className="flex items-start gap-4 p-5 bg-brand-primary/10 rounded-2xl border border-brand-primary/20 backdrop-blur-sm group-hover:bg-brand-primary/20 transition-all duration-500 cursor-default">
-                            <AlertCircle size={18} className="text-brand-primary shrink-0" />
-                            <div className="space-y-1">
-                                <p className="text-xs font-bold text-brand-primary uppercase tracking-widest">Advisory</p>
-                                <p className="text-xs leading-relaxed text-slate-300 font-medium">
-                                    Your <strong>{highest}</strong> spending is significant. Implementing a 15% budget cap could save you approximately ₹{(categoryMap[highest] * 0.15).toFixed(0)} per month.
-                                </p>
-                            </div>
+                        <div className="px-3 py-1 bg-red-400/10 border border-red-400/20 rounded-full flex items-center gap-2">
+                            <TrendingUp className="text-red-400" size={12} />
+                            <span className="text-[9px] font-black text-red-100 uppercase tracking-widest">Urgent</span>
                         </div>
-
-                        <button className="w-full py-4 text-xs font-bold uppercase tracking-[0.2em] bg-white text-slate-900 rounded-2xl flex items-center justify-center gap-2 hover:bg-brand-accent hover:text-white transition-all shadow-xl active:scale-95 group">
-                            Full Report <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
                     </div>
 
-                    {/* Decorative Background Elements */}
-                    <div className="absolute -top-20 -right-20 w-48 h-48 bg-brand-accent/20 blur-[100px] rounded-full group-hover:bg-brand-accent/30 transition-colors" />
-                    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-brand-primary/10 blur-3xl rounded-full" />
+                    <div className="space-y-2">
+                        <h4 className="text-4xl font-black text-white tracking-tighter capitalize">{highest}</h4>
+                        <p className="text-sm font-bold text-slate-400 tracking-tight">₹{highestAmount.toLocaleString()} total outflow</p>
+                    </div>
+
+                    <div className="p-5 bg-white/5 rounded-2xl border border-white/5 flex items-start gap-4 hover:border-brand-primary/20 transition-all">
+                        <AlertCircle className="text-brand-primary shrink-0" size={18} />
+                        <p className="text-[11px] leading-relaxed text-slate-400 font-medium">
+                            <strong className="text-white">Advisory:</strong> Your {highest} spending is high. Capping this at 15% could save you <strong className="text-brand-primary">₹{(highestAmount * 0.15).toFixed(0)}</strong> next month.
+                        </p>
+                    </div>
                 </div>
 
-                {/* Secondary Cards Column */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="glass p-8 rounded-[2.5rem] border border-slate-700/50 flex flex-col gap-6">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <BarChart3 className="text-slate-400" size={20} />
-                                <h4 className="text-sm font-bold uppercase tracking-widest text-slate-200">Category Breakdown</h4>
-                            </div>
-                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">All Expenses</span>
-                        </div>
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 blur-[60px] rounded-full" />
+                <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-brand-accent/5 blur-[40px] rounded-full" />
+            </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            {categories.map((cat, i) => (
-                                <div key={i} className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 flex items-center justify-between hover:border-slate-700 transition-colors shadow-lg">
-                                    <span className="text-xs font-bold text-slate-300 capitalize">{cat}</span>
-                                    <span className="text-sm font-black text-white">₹{categoryMap[cat].toLocaleString()}</span>
+            {/* Progressive Breakdown - Dynamic Bars for neatness */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Breakdown</h4>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">Top Sectors</span>
+                </div>
+
+                <div className="space-y-5 px-1">
+                    {categories.slice(0, 4).map((cat, i) => {
+                        const percentage = totalExpenses > 0 ? (categoryMap[cat] / totalExpenses) * 100 : 0;
+                        return (
+                            <div key={i} className="group cursor-default">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors">{cat}</span>
+                                    <span className="text-[11px] font-black text-white tracking-widest">₹{categoryMap[cat].toLocaleString()}</span>
                                 </div>
-                            ))}
-                            {categories.length === 0 && (
-                                <p className="col-span-2 py-10 text-center text-xs text-slate-600 italic font-medium">No expense data available for analysis yet.</p>
-                            )}
-                        </div>
-                    </div>
+                                <div className="h-1.5 w-full bg-slate-800/50 rounded-full overflow-hidden border border-white/5">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-brand-primary to-brand-accent transition-all duration-1000 ease-out rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                                        style={{ width: `${percentage}%` }}
+                                    />
+                                </div>
+                            </div>
+                        );
+                    })}
 
-                    <div className="bg-slate-900 rounded-[2.5rem] p-8 border border-white/5 flex items-center justify-between group cursor-pointer hover:border-brand-primary/30 transition-all shadow-2xl">
-                        <div className="space-y-1">
-                            <h4 className="text-lg font-bold text-white tracking-tight">Recurring Payments detected</h4>
-                            <p className="text-xs text-slate-500 font-medium tracking-tight">System found 3 subscriptions that recur monthly.</p>
+                    {categories.length === 0 && (
+                        <div className="p-8 bg-slate-900 shadow-inner rounded-3xl border border-white/5 text-center">
+                            <p className="text-[10px] uppercase font-black tracking-widest text-slate-600">Pending sufficient data...</p>
                         </div>
-                        <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700 group-hover:bg-brand-primary group-hover:text-slate-950 transition-all font-bold">
-                            <ArrowRight size={20} />
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
+
+            {/* Smart Action Call */}
+            <button className="group w-full py-5 bg-slate-900 border border-white/5 rounded-[2rem] flex items-center justify-center gap-3 hover:bg-brand-primary hover:border-brand-primary transition-all shadow-xl active:scale-95">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-slate-950 transition-colors">Generate Full Insight</span>
+                <ArrowRight size={16} className="text-slate-500 group-hover:text-slate-950 transition-all group-hover:translate-x-1" />
+            </button>
         </div>
     );
 }

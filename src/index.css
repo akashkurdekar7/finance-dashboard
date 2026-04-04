@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
 
 @theme {
   --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
@@ -16,12 +16,23 @@
   }
 }
 
-@layer components {
-  .glass {
-    @apply bg-brand-card/40 backdrop-blur-md border border-white/10 shadow-xl;
-  }
+@utility glass {
+  background-color: color-mix(in srgb, var(--color-brand-card) 25%, transparent);
+  backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, white 5%, transparent);
+}
 
+@utility glass-container {
+  @apply glass rounded-[2rem] overflow-hidden shadow-2xl;
+}
+
+@layer components {
   .stat-card {
-    @apply glass p-6 rounded-2xl flex items-center gap-4 transition-all hover:scale-[1.02] hover:bg-brand-card/60;
+    @apply glass p-10 rounded-[2.5rem] flex items-center gap-6 transition-all duration-500 ease-out;
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-brand-card) 40%, transparent);
+      border-color: color-mix(in srgb, white 15%, transparent);
+      @apply -translate-y-2;
+    }
   }
 }
