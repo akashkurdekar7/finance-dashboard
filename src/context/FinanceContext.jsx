@@ -3,18 +3,19 @@ import { createContext, useContext, useState, useEffect } from "react";
 const FinanceContext = createContext();
 
 export const FinanceProvider = ({ children }) => {
-    const [role, setRole] = useState("viewer");
+    // 🔹 Core State
+    const [role, setRole] = useState(() => localStorage.getItem("role") || "viewer");
     const [transactions, setTransactions] = useState([]);
     const [cards, setCards] = useState([]);
-    const [search, setSearch] = useState("");
-    const [filterType, setFilterType] = useState("all");
+    const [search, setSearch] = useState(() => localStorage.getItem("search") || "");
+    const [filterType, setFilterType] = useState(() => localStorage.getItem("filterType") || "all");
+    const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
+    const [timeRange, setTimeRange] = useState("weekly"); // 🔹 'daily' | 'weekly' | 'monthly'
 
-    // Static baseline for trends (In real app, this would be computed from past month's data)
-    const [lastMonthData] = useState({
-        income: 58000,
-        expenses: 32000
-    });
+    // 🔹 Static Baseline (Trends)
+    const [lastMonthData] = useState({ income: 58000, expenses: 32000 });
 
+    // 🔹 Initial Load
     useEffect(() => {
         const enrichedTransactions = [
             { id: 1, date: "2026-04-01", amount: 65000, category: "Salary", type: "income", description: "Monthly fixed salary" },
@@ -48,37 +49,39 @@ export const FinanceProvider = ({ children }) => {
         setCards(savedCards ? JSON.parse(savedCards) : initialCards);
     }, []);
 
+    // 🔹 Persistence Layer
+    useEffect(() => { if (transactions.length > 0) localStorage.setItem("transactions", JSON.stringify(transactions)); }, [transactions]);
+    useEffect(() => { if (cards.length > 0) localStorage.setItem("cards", JSON.stringify(cards)); }, [cards]);
+    useEffect(() => { localStorage.setItem("role", role); }, [role]);
+    useEffect(() => { localStorage.setItem("search", search); }, [search]);
+    useEffect(() => { localStorage.setItem("filterType", filterType); }, [filterType]);
     useEffect(() => {
-        if (transactions.length > 0) localStorage.setItem("transactions", JSON.stringify(transactions));
-    }, [transactions]);
+        localStorage.setItem("darkMode", darkMode);
+        if (darkMode) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+    }, [darkMode]);
 
-    useEffect(() => {
-        if (cards.length > 0) localStorage.setItem("cards", JSON.stringify(cards));
-    }, [cards]);
-
+    // 🔹 Derived Calculation Engine
     const totalIncome = transactions.filter(t => t.type === "income").reduce((acc, t) => acc + t.amount, 0);
     const totalExpenses = transactions.filter(t => t.type === "expense").reduce((acc, t) => acc + t.amount, 0);
     const totalBalance = totalIncome - totalExpenses;
 
-    // 🔹 Trend Calculations
-    const calculateTrend = (current, previous) => {
-        if (previous === 0) return 0;
-        return ((current - previous) / previous) * 100;
-    };
-
+    const calculateTrend = (current, previous) => previous === 0 ? 0 : ((current - previous) / previous) * 100;
     const trends = {
         income: calculateTrend(totalIncome, lastMonthData.income),
         expenses: calculateTrend(totalExpenses, lastMonthData.expenses)
     };
 
     const filteredTransactions = transactions.filter(t => {
-        const matchesSearch = t.category.toLowerCase().includes(search.toLowerCase()) || 
-                             t.description.toLowerCase().includes(search.toLowerCase());
+        const matchesSearch = t.category.toLowerCase().includes(search.toLowerCase()) ||
+            t.description.toLowerCase().includes(search.toLowerCase());
         const matchesType = filterType === "all" ? true : t.type === filterType;
         return matchesSearch && matchesType;
     });
 
+    // 🔹 State Modifiers
     const deleteTransaction = (id) => setTransactions(prev => prev.filter(t => t.id !== id));
+    const editTransaction = (id, updatedTxn) => setTransactions(prev => prev.map(t => t.id === id ? { ...t, ...updatedTxn } : t));
     const addTransaction = (newTransaction) => setTransactions(prev => [{ ...newTransaction, id: Date.now() }, ...prev]);
     const addCard = (newCard) => setCards(prev => [...prev, { ...newCard, id: Date.now() }]);
     const deleteCard = (id) => setCards(prev => prev.filter(c => c.id !== id));
@@ -95,11 +98,13 @@ export const FinanceProvider = ({ children }) => {
                 transactions, setTransactions, filteredTransactions,
                 search, setSearch,
                 filterType, setFilterType,
+                darkMode, setDarkMode,
+                timeRange, setTimeRange,
                 cards, setCards,
-                deleteTransaction, addTransaction,
+                deleteTransaction, addTransaction, editTransaction,
                 addCard, deleteCard,
                 totalIncome, totalExpenses, totalBalance,
-                trends, // 🔹 Exposing calculated trends
+                trends,
                 permissions: permissions[role],
             }}
         >

@@ -1,6 +1,6 @@
-import { useFinance } from "../context/FinanceContext";
+import { useFinance } from "../../../context/FinanceContext";
 import { Search, Filter } from "lucide-react";
-import CustomSelect from "./CustomSelect";
+import CustomSelect from "../../../components/ui/CustomSelect";
 
 export default function Filters() {
   const { search, setSearch, filterType, setFilterType } = useFinance();
@@ -31,7 +31,7 @@ export default function Filters() {
       <div className="hidden md:block w-[1px] h-8 bg-white/10 mx-2" />
 
       {/* Elite Custom Dropdown */}
-      <CustomSelect 
+      <CustomSelect
         options={filterOptions}
         value={filterType}
         onChange={setFilterType}

@@ -7,13 +7,13 @@ import { CreditCard as CardIcon, Plus, Info, ChevronRight } from "lucide-react";
  */
 const CreditCardItem = ({ card, position, totalCards, onClick }) => {
     // Tighter offsets for a neater stack
-    const offset = position * 14; 
+    const offset = position * 14;
     const scale = 1 - position * 0.04;
     const opacity = 1 - position * 0.25;
     const zIndex = totalCards - position;
 
     return (
-        <div 
+        <div
             onClick={onClick}
             className={`
                 absolute w-full h-[200px] rounded-[2rem] p-7 flex flex-col justify-between 
@@ -21,7 +21,7 @@ const CreditCardItem = ({ card, position, totalCards, onClick }) => {
                 bg-gradient-to-br ${card.theme}
                 hover:-translate-y-4 hover:shadow-brand-accent/20
             `}
-            style={{ 
+            style={{
                 top: `${offset}px`,
                 zIndex: zIndex,
                 opacity: opacity,
@@ -90,7 +90,7 @@ const CardStack = ({ onAddClick }) => {
                         {cards.length} ACTIVE
                     </span>
                 </div>
-                <button 
+                <button
                     onClick={onAddClick}
                     className="p-2.5 bg-slate-800/80 hover:bg-brand-accent hover:text-white rounded-xl border border-white/5 transition-all text-slate-400 shadow-xl shadow-black/20 active:scale-90 group"
                 >
@@ -101,9 +101,9 @@ const CardStack = ({ onAddClick }) => {
             {/* Compact Stack Viewport */}
             <div className="relative w-full h-[260px] group transition-all duration-700">
                 {orderedCards.map((card) => (
-                    <CreditCardItem 
-                        key={card.id} 
-                        card={card} 
+                    <CreditCardItem
+                        key={card.id}
+                        card={card}
                         position={card.position}
                         totalCards={cards.length}
                         onClick={handleCycle}

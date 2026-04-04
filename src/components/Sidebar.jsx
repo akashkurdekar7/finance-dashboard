@@ -1,15 +1,18 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useFinance } from "../context/FinanceContext";
-import { LayoutDashboard, ReceiptText, PieChart, ShieldUser, TrendingUp } from "lucide-react";
-import CustomSelect from "./CustomSelect";
+import { LayoutDashboard, ReceiptText, PieChart, ShieldUser, TrendingUp, Sun, Moon, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import CustomSelect from "./ui/CustomSelect";
 
 const Sidebar = () => {
-    const { role, setRole } = useFinance();
+    const { role, setRole, darkMode, setDarkMode } = useFinance();
+    const [isHovered, setIsHovered] = useState(false);
 
     const navItems = [
-        { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/" },
-        { icon: <ReceiptText size={20} />, label: "Transactions", path: "/transactions" },
-        { icon: <PieChart size={20} />, label: "Insights", path: "/insights" },
+        { icon: <LayoutDashboard size={22} />, label: "Dashboard", path: "/" },
+        { icon: <ReceiptText size={22} />, label: "Transactions", path: "/transactions" },
+        { icon: <PieChart size={22} />, label: "Insights", path: "/insights" },
     ];
 
     const roleOptions = [
@@ -18,60 +21,111 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="h-full bg-slate-950/40 backdrop-blur-3xl border-r border-slate-800 p-6 flex flex-col gap-8 shadow-2xl">
+        <motion.div
+            className="h-full bg-slate-950/40 backdrop-blur-3xl border-r border-slate-800 flex flex-col gap-10 shadow-2xl relative z-50 overflow-visible"
+            initial={{ width: 100 }}
+            animate={{ width: isHovered ? 280 : 100 }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            transition={{ type: "spring", stiffness: 200, damping: 25 }}
+        >
             {/* Logo Section */}
-            <div className="flex items-center gap-3 px-2">
-                <div className="w-10 h-10 bg-gradient-to-tr from-brand-primary to-brand-accent rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20">
+            <div className="flex items-center gap-4 px-6 pt-10">
+                <motion.div
+                    className="w-12 h-12 bg-gradient-to-tr from-brand-primary to-brand-accent rounded-2xl flex items-center justify-center shadow-lg shadow-brand-primary/20 shrink-0"
+                    whileHover={{ scale: 1.1, rotate: 15 }}
+                >
                     <TrendingUp className="text-white" size={24} />
-                </div>
-                <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-                    Finance.io
-                </h1>
+                </motion.div>
+                <AnimatePresence>
+                    {isHovered && (
+                        <motion.h1
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            className="text-2xl font-black tracking-tighter bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent whitespace-nowrap"
+                        >
+                            Finance.io
+                        </motion.h1>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Navigation Section */}
-            <nav className="flex-1 space-y-2">
+            <nav className="flex-1 space-y-4 px-4 overflow-hidden">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.path}
                         to={item.path}
                         className={({ isActive }) => `
-                            flex items-center gap-4 px-4 py-3.5 rounded-xl cursor-pointer transition-all duration-300
-                            ${isActive 
-                                ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-lg shadow-brand-primary/5" 
+                            flex items-center gap-6 px-4 py-4 rounded-2xl cursor-pointer transition-all duration-300
+                            ${isActive
+                                ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20 shadow-lg shadow-brand-primary/5"
                                 : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-100"}
                         `}
                     >
-                        {item.icon}
-                        <span className="font-medium">{item.label}</span>
+                        <div className="shrink-0">{item.icon}</div>
+                        <AnimatePresence>
+                            {isHovered && (
+                                <motion.span
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="font-bold whitespace-nowrap flex-1"
+                                >
+                                    {item.label}
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                        {isHovered && <ChevronRight size={14} className="opacity-40" />}
                     </NavLink>
                 ))}
             </nav>
 
-            {/* Role Switcher Section (Redesigned with CustomSelect) */}
-            <div className="glass p-5 rounded-2xl border-brand-accent/20 bg-brand-accent/5 relative overflow-hidden group">
-                <div className="flex items-center gap-2 mb-4 text-brand-accent relative z-10">
-                    <ShieldUser size={18} />
-                    <span className="text-xs font-bold uppercase tracking-widest text-[#60efff]">Access Control</span>
-                </div>
-                
-                <div className="relative z-10">
-                    <CustomSelect 
-                        options={roleOptions}
-                        value={role}
-                        onChange={setRole}
-                        className="w-full"
-                    />
+            {/* Bottom Controls */}
+            <div className={`px-4 pb-30 space-y-6 transition-all ${isHovered ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                {/* Dark Mode Toggle */}
+                <div className="flex items-center justify-between px-4 py-4 bg-slate-900 border border-white/5 rounded-2xl">
+                    <div className="flex items-center gap-3">
+                        {darkMode ? <Moon size={18} className="text-brand-accent" /> : <Sun size={18} className="text-brand-primary" />}
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Night Flow</span>
+                    </div>
+                    <button
+                        onClick={() => setDarkMode(!darkMode)}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${darkMode ? 'bg-brand-accent' : 'bg-slate-700'}`}
+                    >
+                        <motion.div
+                            className="w-4 h-4 bg-white rounded-full absolute top-0.5"
+                            animate={{ left: darkMode ? 22 : 2 }}
+                        />
+                    </button>
                 </div>
 
-                <p className="mt-4 text-[10px] text-slate-500 leading-relaxed text-center font-black uppercase tracking-tighter opacity-60">
-                    {role === "admin" ? "Write Access Active" : "Read-Only Environment"}
-                </p>
+                {/* Role Switcher */}
+                <div className="glass p-5 rounded-2xl border-brand-accent/20 bg-brand-accent/5 relative overflow-visible group">
+                    <div className="flex items-center gap-2 mb-4 text-brand-accent relative z-10">
+                        <ShieldUser size={18} />
+                        <span className="text-[10px] font-black uppercase tracking-widest leading-none">Security Access</span>
+                    </div>
 
-                {/* Decoration */}
-                <div className="absolute top-0 right-0 w-16 h-16 bg-brand-accent/10 blur-2xl rounded-full" />
+                    <div className="relative z-10">
+                        <CustomSelect
+                            options={roleOptions}
+                            value={role}
+                            onChange={setRole}
+                            className="w-full"
+                        />
+                    </div>
+                </div>
             </div>
-        </div>
+
+            {/* Hint for narrow view */}
+            {!isHovered && (
+                <div className="absolute inset-x-0 bottom-10 flex justify-center">
+                    <ChevronRight size={20} className="text-slate-700 animate-pulse" />
+                </div>
+            )}
+        </motion.div>
     );
 };
 

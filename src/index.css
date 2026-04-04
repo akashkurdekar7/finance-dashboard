@@ -1,18 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
-  --color-brand-primary: #10b981;
-  --color-brand-secondary: #059669;
-  --color-brand-accent: #3b82f6;
-  --color-brand-bg: #0f172a;
-  --color-brand-card: #1e293b;
+  --color-brand-primary: #00c0c9;
+  --color-brand-secondary: #0891b2;
+  --color-brand-accent: #60efff;
+  --color-brand-bg: #030712;
+  --color-brand-card: #0f172a;
+
+  --shadow-3xl: 0 35px 60px -15px rgba(0, 0, 0, 0.7);
 }
 
 @layer base {
   body {
-    @apply bg-brand-bg text-slate-100 font-sans antialiased;
+    @apply bg-brand-bg text-slate-100 font-sans antialiased selection:bg-brand-primary/30 selection:text-white transition-colors duration-500;
+  }
+
+  /* 🔹 Custom Scrollbar for Elite look */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-brand-bg;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-800 rounded-full border-2 border-brand-bg hover:bg-slate-700 transition-colors;
   }
 }
 
@@ -22,17 +37,68 @@
   border: 1px solid color-mix(in srgb, white 5%, transparent);
 }
 
-@utility glass-container {
-  @apply glass rounded-[2rem] overflow-hidden shadow-2xl;
+@layer utilities {
+
+
+  .glass-container {
+    @apply glass rounded-[3rem] overflow-hidden;
+  }
+
+  .neon-glow {
+    text-shadow: 0 0 10px rgba(0, 192, 201, 0.5), 0 0 20px rgba(0, 192, 201, 0.2);
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
 }
 
-@layer components {
-  .stat-card {
-    @apply glass p-10 rounded-[2.5rem] flex items-center gap-6 transition-all duration-500 ease-out;
-    &:hover {
-      background-color: color-mix(in srgb, var(--color-brand-card) 40%, transparent);
-      border-color: color-mix(in srgb, white 15%, transparent);
-      @apply -translate-y-2;
-    }
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
   }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse-neon {
+
+  0%,
+  100% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+
+  50% {
+    opacity: 1;
+    filter: brightness(1.5);
+  }
+}
+
+.pulse-neon {
+  animation: pulse-neon 4s infinite ease-in-out;
+}
+
+/* 🔹 Dark Mode Support Overrides */
+.dark body {
+  --color-brand-bg: #020617;
+  --color-brand-card: #0c111d;
+}
+
+.light body {
+  --color-brand-bg: #f8fafc;
+  --color-brand-card: #ffffff;
+  @apply text-slate-900;
+}
+
+.light .glass {
+  @apply bg-white/40 border-slate-200 shadow-xl;
+}
+
+.light .stat-card {
+  @apply bg-white border-slate-100;
 }
