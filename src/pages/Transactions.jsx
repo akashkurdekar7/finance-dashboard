@@ -88,6 +88,10 @@ const TransactionsTable = () => {
 
     const handleEditSubmit = (e) => {
         e.preventDefault();
+        if (!editingTxn.amount || isNaN(editingTxn.amount)) {
+            alert('Please enter a valid amount');
+            return;
+        }
         editTransaction(editingTxn.id, {
             ...editingTxn,
             amount: parseFloat(editingTxn.amount)

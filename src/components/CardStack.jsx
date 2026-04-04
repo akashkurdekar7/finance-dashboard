@@ -5,7 +5,7 @@ import { CreditCard as CardIcon, Plus, Info, ChevronRight } from "lucide-react";
 /**
  * Optimized Individual Credit Card Component
  */
-const CreditCardItem = ({ card, position, totalCards, onClick }) => {
+const CreditCardItem = ({ card, position, totalCards, onClick , className}) => {
     // Tighter offsets for a neater stack
     const offset = position * 14;
     const scale = 1 - position * 0.04;
@@ -45,17 +45,21 @@ const CreditCardItem = ({ card, position, totalCards, onClick }) => {
             </div>
 
             <div className="space-y-4">
-                <p className="text-xl font-bold text-white tracking-[0.1em] font-mono leading-none drop-shadow-2xl">
-                    {card.cardNumber}
-                </p>
+    <p className="text-xl font-bold text-white tracking-[0.1em] font-mono leading-none drop-shadow-2xl">
+        {card.cardNumber}
+    </p>
+
+    {card.isPlaceholder && (
+        <p className="text-xs text-white/40">Add your first card</p>
+    )}
                 <div className="flex items-center justify-between text-white/80">
                     <div className="flex flex-col">
                         <span className="text-[8px] uppercase font-black tracking-widest text-white/20 leading-none">Holder</span>
-                        <span className="text-[10px] font-black uppercase tracking-tight leading-none">{card.holder}</span>
+                        <span className="text-[10px] mt-2 font-black uppercase tracking-tight leading-none">{card.holder}</span>
                     </div>
                     <div className="flex flex-col items-end">
                         <span className="text-[8px] uppercase font-black tracking-widest text-white/20 leading-none">Expiry</span>
-                        <span className="text-[11px] font-black leading-none">{card.expiry}</span>
+                        <span className="text-[11px] font-black leading-none mt-2">{card.expiry}</span>
                     </div>
                 </div>
             </div>
@@ -63,20 +67,34 @@ const CreditCardItem = ({ card, position, totalCards, onClick }) => {
     );
 };
 
+const placeholderCard = {
+  id: "placeholder",
+  cardNumber: "0000 0000 0000 0000",
+  expiry: "MM/YY",
+  holder: "Your Name",
+  type: "card",
+  theme: "from-slate-800 via-slate-900 to-black",
+  balance: 0,
+  isPlaceholder: true
+};
 /**
  * Neater Card Stack Component
  */
 const CardStack = ({ onAddClick }) => {
+    
     const { cards } = useFinance();
+
+const displayCards = cards.length > 0 ? cards : [placeholderCard];
     const [startIndex, setStartIndex] = useState(0);
 
-    const handleCycle = () => {
-        if (cards.length <= 1) return;
-        setStartIndex((prev) => (prev + 1) % cards.length);
-    };
+   const handleCycle = () => {
+  if (displayCards.length <= 1) return;
+  setStartIndex((prev) => (prev + 1) % displayCards.length);
+};
 
-    const orderedCards = cards.map((card, index) => {
-        const position = (index - startIndex + cards.length) % cards.length;
+   const orderedCards = displayCards.map((card, index) => {
+  const total = displayCards.length;
+  const position = (index - startIndex + total) % total;
         return { ...card, position };
     });
 
@@ -105,8 +123,9 @@ const CardStack = ({ onAddClick }) => {
                         key={card.id}
                         card={card}
                         position={card.position}
-                        totalCards={cards.length}
-                        onClick={handleCycle}
+                       totalCards={displayCards.length}
+                        className={`${card.isPlaceholder ? "opacity-60 cursor-default" : "cursor-pointer"}`}
+                        onClick={card.isPlaceholder ? undefined : handleCycle}
                     />
                 ))}
             </div>
@@ -119,7 +138,7 @@ const CardStack = ({ onAddClick }) => {
                 <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Wallet Intelligence</p>
                     <p className="text-[11px] font-bold leading-relaxed text-slate-400">
-                        Top asset currently represents <strong className="text-white">₹{(cards[startIndex]?.balance || 0).toLocaleString()}</strong> in liquid credit.
+                        Top asset currently represents <strong className="text-white">₹{((displayCards[startIndex]?.balance || 0)).toLocaleString()}</strong> in liquid credit.
                     </p>
                 </div>
             </div>

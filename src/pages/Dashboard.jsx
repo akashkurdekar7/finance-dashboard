@@ -14,6 +14,7 @@ import AddCardModal from "../features/dashboard/modals/AddCardModal";
 
 export default function Dashboard() {
     const { addTransaction, addCard, permissions } = useFinance();
+    const { cards } = useFinance();
     const [isLoading, setIsLoading] = useState(true);
     const [isAdding, setIsAdding] = useState(false);
     const [isAddingCard, setIsAddingCard] = useState(false);
@@ -140,7 +141,10 @@ export default function Dashboard() {
 
                 <div className="lg:col-span-4 flex flex-col gap-20 sticky top-12">
                     <div className="flex justify-center w-full">
-                        <CardStack onAddClick={() => setIsAddingCard(true)} />
+                        <CardStack 
+  cards={cards} 
+  onAddClick={() => setIsAddingCard(true)} 
+/>
                     </div>
 
                     <div className="flex justify-center lg:justify-end w-full">
