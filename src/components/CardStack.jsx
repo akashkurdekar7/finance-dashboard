@@ -5,7 +5,9 @@ import { CreditCard as CardIcon, Plus, Info, ChevronRight } from "lucide-react";
 /**
  * Optimized Individual Credit Card Component
  */
-const CreditCardItem = ({ card, position, totalCards, onClick , className}) => {
+const maskCard = (num) =>
+    num.replace(/\d(?=\d{4})/g, "*");
+const CreditCardItem = ({ card, position, totalCards, onClick, className }) => {
     // Tighter offsets for a neater stack
     const offset = position * 14;
     const scale = 1 - position * 0.04;
@@ -16,7 +18,7 @@ const CreditCardItem = ({ card, position, totalCards, onClick , className}) => {
         <div
             onClick={onClick}
             className={`
-                absolute w-full h-[200px] rounded-[2rem] p-7 flex flex-col justify-between 
+                absolute w-full h-auto rounded-[2rem] p-7 flex flex-col justify-between 
                 shadow-2xl border border-white/5 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-pointer
                 bg-gradient-to-br ${card.theme}
                 hover:-translate-y-4 hover:shadow-brand-accent/20
@@ -39,21 +41,24 @@ const CreditCardItem = ({ card, position, totalCards, onClick , className}) => {
                 </div>
             </div>
 
-            <div className="w-11 h-7 bg-gradient-to-br from-slate-300 via-slate-100 to-slate-400 rounded-md shadow-inner border border-white/20 relative opacity-90 overflow-hidden">
+            <div className="w-11 h-7 flex-shrink-0 mb-2 bg-gradient-to-br from-slate-300 via-slate-100 to-slate-400 rounded-md shadow-inner border border-white/20 relative opacity-90 overflow-hidden">
                 <div className="absolute inset-x-0 top-1/2 h-[1px] bg-black/5" />
                 <div className="absolute inset-y-0 left-1/2 w-[1px] bg-black/5" />
             </div>
 
-            <div className="space-y-4">
-    <p className="text-xl font-bold text-white tracking-[0.1em] font-mono leading-none drop-shadow-2xl">
-        {card.cardNumber}
-    </p>
+            <div className="">
+                <p className="text-xl font-bold text-white tracking-[0.1em] font-mono leading-none drop-shadow-2xl">
+                    {card.isPlaceholder
+                        ? card.cardNumber
+                        : maskCard(card.cardNumber)
+                    }
+                </p>
 
-    {card.isPlaceholder && (
-        <p className="text-xs text-white/40">Add your first card</p>
-    )}
+                {card.isPlaceholder && (
+                    <p className="text-xs text-white/40 mb-1">Add your first card</p>
+                )}
                 <div className="flex items-center justify-between text-white/80">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col mb-2">
                         <span className="text-[8px] uppercase font-black tracking-widest text-white/20 leading-none">Holder</span>
                         <span className="text-[10px] mt-2 font-black uppercase tracking-tight leading-none">{card.holder}</span>
                     </div>
@@ -68,33 +73,33 @@ const CreditCardItem = ({ card, position, totalCards, onClick , className}) => {
 };
 
 const placeholderCard = {
-  id: "placeholder",
-  cardNumber: "0000 0000 0000 0000",
-  expiry: "MM/YY",
-  holder: "Your Name",
-  type: "card",
-  theme: "from-slate-800 via-slate-900 to-black",
-  balance: 0,
-  isPlaceholder: true
+    id: "placeholder",
+    cardNumber: "0000 0000 0000 0000",
+    expiry: "MM/YY",
+    holder: "Your Name",
+    type: "card",
+    theme: "from-slate-800 via-slate-900 to-black",
+    balance: 0,
+    isPlaceholder: true
 };
 /**
  * Neater Card Stack Component
  */
 const CardStack = ({ onAddClick }) => {
-    
+
     const { cards } = useFinance();
 
-const displayCards = cards.length > 0 ? cards : [placeholderCard];
+    const displayCards = cards.length > 0 ? cards : [placeholderCard];
     const [startIndex, setStartIndex] = useState(0);
 
-   const handleCycle = () => {
-  if (displayCards.length <= 1) return;
-  setStartIndex((prev) => (prev + 1) % displayCards.length);
-};
+    const handleCycle = () => {
+        if (displayCards.length <= 1) return;
+        setStartIndex((prev) => (prev + 1) % displayCards.length);
+    };
 
-   const orderedCards = displayCards.map((card, index) => {
-  const total = displayCards.length;
-  const position = (index - startIndex + total) % total;
+    const orderedCards = displayCards.map((card, index) => {
+        const total = displayCards.length;
+        const position = (index - startIndex + total) % total;
         return { ...card, position };
     });
 
@@ -123,7 +128,7 @@ const displayCards = cards.length > 0 ? cards : [placeholderCard];
                         key={card.id}
                         card={card}
                         position={card.position}
-                       totalCards={displayCards.length}
+                        totalCards={displayCards.length}
                         className={`${card.isPlaceholder ? "opacity-60 cursor-default" : "cursor-pointer"}`}
                         onClick={card.isPlaceholder ? undefined : handleCycle}
                     />

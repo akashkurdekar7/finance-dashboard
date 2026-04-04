@@ -65,6 +65,14 @@ export default function Dashboard() {
 
     const handleAddCard = (e) => {
         e.preventDefault();
+        if (newCard.cardNumber.replace(/\s/g, "").length !== 16) {
+            alert("Card number must be 16 digits");
+            return;
+        }
+        if (!newCard.expiry || !newCard.holder) {
+            alert("Card expiry and holder are required");
+            return;
+        }
         addCard({ ...newCard, balance: parseFloat(newCard.balance) });
         setIsAddingCard(false);
         setNewCard({ cardNumber: "", expiry: "", holder: "", type: "visa", theme: "from-slate-950 via-slate-900 to-indigo-950", balance: 0 });
@@ -141,10 +149,10 @@ export default function Dashboard() {
 
                 <div className="lg:col-span-4 flex flex-col gap-20 sticky top-12">
                     <div className="flex justify-center w-full">
-                        <CardStack 
-  cards={cards} 
-  onAddClick={() => setIsAddingCard(true)} 
-/>
+                        <CardStack
+                            cards={cards}
+                            onAddClick={() => setIsAddingCard(true)}
+                        />
                     </div>
 
                     <div className="flex justify-center lg:justify-end w-full">

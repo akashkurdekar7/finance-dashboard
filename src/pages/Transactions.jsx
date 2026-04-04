@@ -108,7 +108,7 @@ const TransactionsTable = () => {
     return (
         <div className="space-y-6">
             {/* Page Header */}
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-10 px-10">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center border border-slate-700 shadow-xl">
                         <ReceiptText className="text-brand-primary" size={24} />

@@ -11,6 +11,15 @@ const AddCardModal = ({
     cardTypeOptions,
     themeOptions,
 }) => {
+    const formatExpiry = (val) =>
+        val.replace(/\D/g, "").slice(0, 4).replace(/(\d{2})(\d{1,2})/, "$1/$2");
+    const formatCardNumber = (value) => {
+        return value
+            .replace(/\D/g, "")          // only numbers
+            .slice(0, 16)               // max 16 digits
+            .replace(/(.{4})/g, "$1 ")  // add space every 4
+            .trim();
+    };
     return (
         <AnimatePresence>
             {open && (
@@ -26,13 +35,39 @@ const AddCardModal = ({
                         </header>
 
                         <form onSubmit={onSubmit} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+
+                                <input
+                                    placeholder="Card Holder"
+                                    value={newCard.holder}
+                                    onChange={(e) =>
+                                        setNewCard({
+                                            ...newCard,
+                                            holder: e.target.value.toUpperCase()
+                                        })
+                                    }
+                                    className="w-full p-3 bg-slate-800 rounded-xl"
+                                />
+
+                                <input
+                                    placeholder="MM/YY"
+                                    value={newCard.expiry}
+                                    onChange={(e) =>
+                                        setNewCard({
+                                            ...newCard,
+                                            expiry: formatExpiry(e.target.value)
+                                        })
+                                    }
+                                    className="w-full p-3 bg-slate-800 rounded-xl"
+                                />
+                            </div>
                             <input
                                 placeholder="Card Number"
                                 value={newCard.cardNumber}
                                 onChange={(e) =>
                                     setNewCard({
                                         ...newCard,
-                                        cardNumber: e.target.value,
+                                        cardNumber: formatCardNumber(e.target.value)
                                     })
                                 }
                                 className="w-full p-3 bg-slate-800 rounded-xl"
