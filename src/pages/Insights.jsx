@@ -261,7 +261,7 @@ export default function Insights() {
             </div>
 
             {/* Breakdown */}
-            <div className="space-y-4 pt-4 border-t border-white/10">
+            <div className="space-y-4 pt-4 border-t border-white/1 px-2 ">
                 {intel.categories.map(([cat, amt]) => (
                     <div key={cat}>
                         <div className="flex justify-between text-xs mb-1">
