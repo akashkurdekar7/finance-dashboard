@@ -73,6 +73,15 @@ const AddCardModal = ({
                                 className="w-full p-3 bg-slate-800 rounded-xl"
                             />
 
+<input
+  type="number"
+  placeholder="Balance"
+  value={newCard.balance}
+  onChange={(e) =>
+    setNewCard({...newCard, balance: e.target.value})
+  }
+  className="w-full p-3 bg-slate-800 rounded-xl"
+/>  
                             <CustomSelect
                                 options={cardTypeOptions}
                                 value={newCard.type}

@@ -89,7 +89,10 @@ const CardStack = ({ onAddClick }) => {
 
     const { cards } = useFinance();
 
-    const displayCards = cards.length > 0 ? cards : [placeholderCard];
+    // const displayCards = cards.length > 0 ? cards : [placeholderCard];
+    const displayCards = (cards && cards.length > 0)
+  ? cards
+  : [placeholderCard];
     const [startIndex, setStartIndex] = useState(0);
 
     const handleCycle = () => {
